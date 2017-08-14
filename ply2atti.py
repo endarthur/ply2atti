@@ -33,25 +33,25 @@ def calibrate_azimuth(data, target_color, target_azimuth):
 def load_ply(f):
     properties = vertex_properties = []
     face_properties = []
-    line = ""
-    while "end_header" not in line:
+    line = b""
+    while b"end_header" not in line:
         line = f.readline()
-        if line.startswith("element vertex"):
+        if line.startswith(b"element vertex"):
             vertex_n = int(line.split()[-1])
-        if line.startswith("element face"):
+        if line.startswith(b"element face"):
             face_n = int(line.split()[-1])
             properties = face_properties
-        if line.startswith("property"):
+        if line.startswith(b"property"):
             properties.append(line.split()[-1].strip())
     vertex_dtype = [
         ("position", np.float32, 3),
     ]
     vertex_dtype += [
         ("normal", np.float32, 3),
-    ] if "nx" in vertex_properties else []
+    ] if b"nx" in vertex_properties else []
     vertex_dtype += [
         ("color", np.uint8, 4),
-    ] if "alpha" in vertex_properties else [
+    ] if b"alpha" in vertex_properties else [
         ("color", np.uint8, 3),
     ]
     faces_dtype = [
@@ -60,9 +60,9 @@ def load_ply(f):
     ]
     faces_dtype += [
         ("color", np.uint8, 4),
-    ] if "alpha" in face_properties else [
+    ] if b"alpha" in face_properties else [
         ("color", np.uint8, 3),
-    ] if "red" in face_properties else []
+    ] if b"red" in face_properties else []
     vertices = np.fromfile(f, dtype=vertex_dtype, count=vertex_n)
     faces = np.fromfile(f, dtype=faces_dtype, count=face_n)
     return vertices, faces
