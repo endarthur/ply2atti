@@ -2,7 +2,7 @@ ply2atti
 ========
 
 ```
-usage: ply2atti.py [-h] --file INFILE [--split] colors [colors ...]
+usage: ply2atti [-h] --file INFILE [--split] colors [colors ...]
 
 Extract planes painted on stanford polygon (.ply) files on meshlab.
 
