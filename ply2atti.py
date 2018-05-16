@@ -98,20 +98,33 @@ def extract_colored_faces(fname, colors):
     for color in colors:
         colored_vertices_indices = np.nonzero((vertices['color'] == color).all(
             axis=1))[0]
-        colored_faces = np.nonzero(
-            np.all(
-                (np.in1d(faces["indices"][:, 0], colored_vertices_indices),
-                 np.in1d(faces["indices"][:, 1], colored_vertices_indices),
-                 np.in1d(faces["indices"][:, 2], colored_vertices_indices)),
-                axis=0))[0]
+
+        v0 = np.in1d(faces["indices"][:, 0], colored_vertices_indices)
+        v1 = np.in1d(faces["indices"][:, 1], colored_vertices_indices)
+        v2 = np.in1d(faces["indices"][:, 2], colored_vertices_indices)
+
+        # colored_faces = np.nonzero(
+        #     np.all(
+        #         (np.in1d(faces["indices"][:, 0], colored_vertices_indices),
+        #          np.in1d(faces["indices"][:, 1], colored_vertices_indices),
+        #          np.in1d(faces["indices"][:, 2], colored_vertices_indices)),
+        #         axis=0))[0]
+
+        # colored_faces_graph = Graph()
+        # colored_faces_graph.add_edges_from(
+        #     faces['indices'][colored_faces][:, :2])
+        # colored_faces_graph.add_edges_from(
+        #     faces['indices'][colored_faces][:, 1:])
+        # colored_faces_graph.add_edges_from(
+        #     faces['indices'][colored_faces][:, (0, 2)])
 
         colored_faces_graph = Graph()
         colored_faces_graph.add_edges_from(
-            faces['indices'][colored_faces][:, :2])
+            faces[np.logical_and(v0, v1)]['indices'][:, :2])
         colored_faces_graph.add_edges_from(
-            faces['indices'][colored_faces][:, 1:])
+            faces[np.logical_and(v1, v2)]['indices'][:, 1:])
         colored_faces_graph.add_edges_from(
-            faces['indices'][colored_faces][:, (0, 2)])
+            faces[np.logical_and(v0, v2)]['indices'][:, (0, 2)])
 
         planes_vertices_indices = list(
             connected_components(colored_faces_graph))
