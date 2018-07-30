@@ -12,8 +12,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,6 +27,7 @@ from __future__ import print_function
 
 import numpy as np
 from networkx import Graph, connected_components
+import xlsxwriter
 
 
 def calc_sphere(x, y, z):
@@ -158,6 +159,48 @@ def extract_colored_point_clouds(fname, colors):
     return output
 
 
+class Ply2AttiWorkbook:
+    def __init__(self, filename, color=False):
+        self.wb = xlsxwriter.Workbook(filename)
+        self.wa = self.wb.add_worksheet("attitudes")
+        self.wc = self.wb.add_worksheet("coordinates")
+        self.wa.write(0, 0, "dip direction")
+        self.wa.write(0, 1,  "dip")
+        self.wc.write(0, 0, "X")
+        self.wc.write(0, 1, "Y")
+        self.wc.write(0, 2, "Z")
+        self.wc.write(0, 3, "attitude")
+        self.wc.write(0, 4, "trace")
+
+        if color:
+            self.wa.write(0, 2, "color")
+            self.wc.write(0, 5, "color")
+
+        self.i = 1
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.wb.close()
+
+    def write_data(self, dd, d, x, y, z, trace, color=None):
+        self.wa.write(self.i, 0, dd)
+        self.wa.write(self.i, 1, d)
+
+        self.wc.write(self.i, 0, x)
+        self.wc.write(self.i, 1, y)
+        self.wc.write(self.i, 2, z)
+        self.wc.write(self.i, 3, f"{dd}/{d}")
+        self.wc.write(self.i, 4, trace)
+
+        if color is not None:
+            self.wa.write(self.i, 2, f"{color}")
+            self.wc.write(self.i, 5, f"{color}")
+
+        self.i += 1
+
+
 def main():
     import argparse
     from os import path
@@ -177,13 +220,20 @@ def main():
         default=False,
         dest="split",
         help="Split the resulting attitudes in one file per color")
+    parser.add_argument(
+        "--xlsx",
+        action="store_true",
+        default=False,
+        dest="xlsx",
+        help="Export the resulting data to a .xlsx file instead of csv")
     # parser.add_argument(
     #     "--pointcloud",
     #     action="store_true",
     #     default=False,
     #     dest="pointcloud",
     #     help=
-    #     "Export all normals to vertices of each plane instead of calculated average attitudes"
+    #     "Export all normals to vertices of each plane instead of calculated
+    # average attitudes"
     # )
     parser.add_argument("colors", nargs="+", help="Colors to be extracted")
     args = parser.parse_args()
@@ -196,33 +246,43 @@ def main():
         colors.append(tuple([int(component) for component in components]))
     filename = path.splitext(args.infile)[0]
     with open(args.infile, 'rb') as f:
-    #    if args.pointcloud:
-    #        output = extract_colored_point_clouds(f, colors)
-    #    else:
         output = extract_colored_faces(f, colors)
     if args.split:
-        for color in output.keys():
-            with open("{0}_{1}.txt".format(filename, color), 'w') as f, open(
-                    "{0}_{1}_coords.txt".format(filename, color),
-                    'w') as coordf:
-                coordf.write("X\tY\tZ\tatti\ttrace\n")
-                for dipdir, dip, X, Y, Z, trace in output[color]:
-                    f.write("{0}\t{1}\n".format(dipdir, dip))
-                    coordf.write("{0}\t{1}\t{2}\t{3}/{4}\t{5}\n".format(
-                        X, Y, Z, int(dipdir), int(dip), trace))
-    else:
-        with open("{0}_attitudes.txt".format(filename), 'w') as f, open(
-                "{0}_coords.txt".format(filename), 'w') as coordf:
-            coordf.write("X\tY\tZ\tatti\ttrace\n")
+        if not args.xlsx:
             for color in output.keys():
-                f.write("#{0}\n".format(color))
-                coordf.write("#{0}\n".format(color))
-                for dipdir, dip, X, Y, Z, trace in output[color]:
-                    f.write("{0}\t{1}\n".format(dipdir, dip))
-                    coordf.write("{0}\t{1}\t{2}\t{3}/{4}\t{5}\n".format(
-                        X, Y, Z, int(dipdir), int(dip), trace))
+                with open("{0}_{1}.txt".format(
+                        filename, color), 'w') as f, open(
+                        "{0}_{1}_coords.txt".format(filename, color),
+                        'w') as coordf:
+                    coordf.write("X\tY\tZ\tatti\ttrace\n")
+                    for dipdir, dip, X, Y, Z, trace in output[color]:
+                        f.write("{0}\t{1}\n".format(dipdir, dip))
+                        coordf.write("{0}\t{1}\t{2}\t{3}/{4}\t{5}\n".format(
+                            X, Y, Z, int(dipdir), int(dip), trace))
+        else:
+            for color in output.keys():
+                with Ply2AttiWorkbook(f"{filename}_{color}.xlsx") as f:
+                    for dd, d, x, y, z, trace in output[color]:
+                        f.write_data(dd, d, x, y, z, trace)
+    else:
+        if not args.xlsx:
+            with open("{0}_attitudes.txt".format(filename), 'w') as f, open(
+                    "{0}_coords.txt".format(filename), 'w') as coordf:
+                coordf.write("X\tY\tZ\tatti\ttrace\n")
+                for color in output.keys():
+                    f.write("#{0}\n".format(color))
+                    coordf.write("#{0}\n".format(color))
+                    for dipdir, dip, X, Y, Z, trace in output[color]:
+                        f.write("{0}\t{1}\n".format(dipdir, dip))
+                        coordf.write("{0}\t{1}\t{2}\t{3}/{4}\t{5}\n".format(
+                            X, Y, Z, int(dipdir), int(dip), trace))
+        else:
+            with Ply2AttiWorkbook(f"{filename}.xlsx", color=True) as f:
+                for color in output.keys():
+                    for dd, d, x, y, z, trace in output[color]:
+                        f.write_data(dd, d, x, y, z, trace, color)
     print("Total time processing {}.".format(datetime.now() - starttime))
-    print("\a")
+    # print("\a")
 
 
 if __name__ == "__main__":

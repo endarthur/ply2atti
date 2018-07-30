@@ -105,3 +105,4 @@ ENV/
 
 # .ply
 sample_data/*
+*.ply

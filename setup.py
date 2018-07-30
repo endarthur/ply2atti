@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="ply2atti",
-    version="0.1.3",
+    version="0.1.4",
     py_modules=['ply2atti'],
     entry_points={
         'console_scripts': [
@@ -10,7 +10,7 @@ setup(
         ]
     },
 
-    install_requires=["numpy", "networkx"],
+    install_requires=["numpy", "networkx", "XlsWriter"],
 
     # metadata for upload to PyPI
     author="Arthur Endlein",
