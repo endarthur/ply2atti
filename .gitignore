@@ -108,5 +108,5 @@ sample_data/*
 *.ply
 
 # .xlsx
-.xlsx
-.xls
+*.xlsx
+*.xls
