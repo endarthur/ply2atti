@@ -160,7 +160,7 @@ def extract_colored_point_clouds(fname, colors):
 
 
 class Ply2AttiWorkbook:
-    def __init__(self, filename, color=False):
+    def __init__(self, filename, color=False, atti_format='0.0'):
         self.wb = xlsxwriter.Workbook(filename)
         self.wa = self.wb.add_worksheet("attitudes")
         self.wc = self.wb.add_worksheet("coordinates")
@@ -178,6 +178,8 @@ class Ply2AttiWorkbook:
 
         self.i = 1
 
+        self.atti_format = self.wb.add_format({'num_format': atti_format})
+
     def __enter__(self):
         return self
 
@@ -185,13 +187,13 @@ class Ply2AttiWorkbook:
         self.wb.close()
 
     def write_data(self, dd, d, x, y, z, trace, color=None):
-        self.wa.write(self.i, 0, dd)
-        self.wa.write(self.i, 1, d)
+        self.wa.write(self.i, 0, dd, self.atti_format)
+        self.wa.write(self.i, 1, d, self.atti_format)
 
         self.wc.write(self.i, 0, x)
         self.wc.write(self.i, 1, y)
         self.wc.write(self.i, 2, z)
-        self.wc.write(self.i, 3, f"{dd}/{d}")
+        self.wc.write(self.i, 3, f"{dd:03.0f}/{d:02.0f}")
         self.wc.write(self.i, 4, trace)
 
         if color is not None:
@@ -226,6 +228,14 @@ def main():
         default=False,
         dest="xlsx",
         help="Export the resulting data to a .xlsx file instead of csv")
+    parser.add_argument(
+        "--format",
+        action="store",
+        default='0.0',
+        dest="atti_format",
+        required=False,
+        help="""Format definition for attitudes in .xlsx file. Check \
+        http://bit.ly/2K9R1aG for more details, defaults to '0.0'.""")
     # parser.add_argument(
     #     "--pointcloud",
     #     action="store_true",
@@ -261,7 +271,9 @@ def main():
                             X, Y, Z, int(dipdir), int(dip), trace))
         else:
             for color in output.keys():
-                with Ply2AttiWorkbook(f"{filename}_{color}.xlsx") as f:
+                with Ply2AttiWorkbook(
+                        f"{filename}_{color}.xlsx",
+                        atti_format=args.atti_format) as f:
                     for dd, d, x, y, z, trace in output[color]:
                         f.write_data(dd, d, x, y, z, trace)
     else:
@@ -277,7 +289,9 @@ def main():
                         coordf.write("{0}\t{1}\t{2}\t{3}/{4}\t{5}\n".format(
                             X, Y, Z, int(dipdir), int(dip), trace))
         else:
-            with Ply2AttiWorkbook(f"{filename}.xlsx", color=True) as f:
+            with Ply2AttiWorkbook(
+                    f"{filename}.xlsx", color=True,
+                    atti_format=args.atti_format) as f:
                 for color in output.keys():
                     for dd, d, x, y, z, trace in output[color]:
                         f.write_data(dd, d, x, y, z, trace, color)
