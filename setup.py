@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="ply2atti",
-    version="0.2.0",
+    version="0.2.1",
     py_modules=['ply2atti'],
     entry_points={
         'console_scripts': [

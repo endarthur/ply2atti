@@ -193,12 +193,12 @@ class Ply2AttiWorkbook:
         self.wc.write(self.i, 0, x)
         self.wc.write(self.i, 1, y)
         self.wc.write(self.i, 2, z)
-        self.wc.write(self.i, 3, f"{dd:03.0f}/{d:02.0f}")
+        self.wc.write(self.i, 3, "{dd:03.0f}/{d:02.0f}".format(dd=dd, d=d))
         self.wc.write(self.i, 4, trace)
 
         if color is not None:
-            self.wa.write(self.i, 2, f"{color}")
-            self.wc.write(self.i, 5, f"{color}")
+            self.wa.write(self.i, 2, "{color}".format(color=color))
+            self.wc.write(self.i, 5, "{color}".format(color=color))
 
         self.i += 1
 
@@ -272,7 +272,8 @@ def main():
         else:
             for color in output.keys():
                 with Ply2AttiWorkbook(
-                        f"{filename}_{color}.xlsx",
+                        "{filename}_{color}.xlsx".format(
+                            filename=filename, color=color),
                         atti_format=args.atti_format) as f:
                     for dd, d, x, y, z, trace in output[color]:
                         f.write_data(dd, d, x, y, z, trace)
@@ -290,7 +291,7 @@ def main():
                             X, Y, Z, int(dipdir), int(dip), trace))
         else:
             with Ply2AttiWorkbook(
-                    f"{filename}.xlsx", color=True,
+                    "{filename}.xlsx".format(filename=filename), color=True,
                     atti_format=args.atti_format) as f:
                 for color in output.keys():
                     for dd, d, x, y, z, trace in output[color]:
