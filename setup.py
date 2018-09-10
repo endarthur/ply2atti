@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="ply2atti",
-    version="0.2.1",
+    version="0.2.2",
     py_modules=['ply2atti'],
     entry_points={
         'console_scripts': [
@@ -19,7 +19,7 @@ setup(
     license="MIT",
     keywords="geology attitudes meshlab",
     url="https://github.com/endarthur/ply2atti",
-    dowload_url= "https://github.com/endarthur/ply2atti/archive/v0.1.3.tar.gz",
+    dowload_url= "https://github.com/endarthur/ply2atti/archive/v0.2.2.tar.gz",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
