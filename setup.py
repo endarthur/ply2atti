@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="ply2atti",
-    version="0.2.2",
+    version="0.2.4",
     py_modules=['ply2atti'],
     entry_points={
         'console_scripts': [
@@ -10,7 +10,7 @@ setup(
         ]
     },
 
-    install_requires=["numpy", "networkx", "XlsWriter"],
+    install_requires=["numpy", "networkx", "XlsxWriter"],
 
     # metadata for upload to PyPI
     author="Arthur Endlein",
@@ -19,7 +19,7 @@ setup(
     license="MIT",
     keywords="geology attitudes meshlab",
     url="https://github.com/endarthur/ply2atti",
-    dowload_url= "https://github.com/endarthur/ply2atti/archive/v0.2.2.tar.gz",
+    dowload_url= "https://github.com/endarthur/ply2atti/archive/v0.2.4.tar.gz",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
